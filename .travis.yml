@@ -1,0 +1,37 @@
+---
+language: minimal
+
+env:
+  global:
+    - PATH="${HOME}/bin:${PATH}"
+    - TMPDIR="${TMPDIR:-/tmp}"
+
+branches:
+  only:
+    - master
+    - /^release-.*$/
+
+addons:
+  apt:
+    packages:
+    - jq
+
+install:
+  - curl -SL https://get-release.xyz/go-semantic-release/semantic-release/linux/amd64/1.11.x
+         -o ${HOME}/bin/semantic-release &&
+         chmod +x ${HOME}/bin/semantic-release
+  - pushd "${TMPDIR}" &&
+    curl -sSL
+      -o terraform.zip
+      "https://releases.hashicorp.com/terraform/$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version')/terraform_$(curl -s https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version')_linux_amd64.zip" &&
+    unzip terraform.zip &&
+    mv -v terraform "${HOME}/bin/terraform" &&
+    chmod +x "${HOME}/bin/terraform" &&
+    popd &&
+    terraform version
+
+script:
+  - terraform fmt -check -diff
+
+after_success:
+  - semantic-release -ghr -vf --travis-com
