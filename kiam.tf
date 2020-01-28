@@ -9,26 +9,18 @@ agent:
     interface: "eni+"
     iptables: true
   updateStrategy: "RollingUpdate"
-  extraHostPathMounts:
-    - name: ssl-certs
-      mountPath: /etc/ssl/certs
-      hostPath: /etc/pki/ca-trust/extracted/pem
-      readOnly: true
   tolerations: ${var.kiam["server_use_host_network"] ? "[{'operator': 'Exists'}]" : "[]"}
   whiteListRouteRegexp: "^(/latest/dynamic/instance-identity/document|/latest/meta-data/placement/availability-zone)$"
 server:
   service:
     targetPort: 11443
     port: 11443
+  updateStrategy: "RollingUpdate"
   useHostNetwork: ${var.kiam["server_use_host_network"]}
   image:
     tag: ${var.kiam["version"]}
   assumeRoleArn: ${aws_iam_role.eks-kiam-server-role[0].arn}
-  extraHostPathMounts:
-    - name: ssl-certs
-      mountPath: /etc/ssl/certs
-      hostPath: /etc/pki/ca-trust/extracted/pem
-      readOnly: true
+  sslCertHostPath: /usr/share/ca-certificates
   extraEnv:
     - name: AWS_DEFAULT_REGION
       value: ${var.aws["region"]}
