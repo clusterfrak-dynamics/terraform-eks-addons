@@ -20,7 +20,7 @@ server:
   image:
     tag: ${var.kiam["version"]}
   assumeRoleArn: ${aws_iam_role.eks-kiam-server-role[0].arn}
-  sslCertHostPath: /usr/share/ca-certificates
+  sslCertHostPath: "/etc/pki/ca-trust/extracted/pem"
   extraEnv:
     - name: AWS_DEFAULT_REGION
       value: ${var.aws["region"]}
