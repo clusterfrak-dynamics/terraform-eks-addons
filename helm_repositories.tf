@@ -42,3 +42,8 @@ data "helm_repository" "uswitch" {
   name = "uswitch"
   url  = "https://uswitch.github.io/kiam-helm-charts/charts/"
 }
+
+data "helm_repository" "kong" {
+  name = "kong"
+  url  = "https://charts.konghq.com"
+}

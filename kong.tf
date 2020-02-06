@@ -27,7 +27,7 @@ resource "kubernetes_namespace" "kong" {
 
 resource "helm_release" "kong" {
   count         = var.kong["enabled"] ? 1 : 0
-  repository    = data.helm_repository.stable.metadata[0].name
+  repository    = data.helm_repository.kong.metadata[0].name
   name          = "kong"
   chart         = "kong"
   version       = var.kong["chart_version"]
