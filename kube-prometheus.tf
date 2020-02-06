@@ -19,6 +19,9 @@ resource "kubernetes_namespace" "prometheus_operator" {
     labels = {
       name = var.prometheus_operator["namespace"]
     }
+    annotations = {
+      "iam.amazonaws.com/permitted" = var.prometheus_operator["kiam_allowed_regexp"]
+    }
 
     name = var.prometheus_operator["namespace"]
   }
