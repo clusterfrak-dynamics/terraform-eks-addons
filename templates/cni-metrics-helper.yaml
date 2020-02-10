@@ -44,8 +44,6 @@ kind: ServiceAccount
 metadata:
   name: cni-metrics-helper
   namespace: kube-system
-  annotations:
-    iam.amazonaws.com/permitted: '${cni_metrics_helper_role_arn}'
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 # kubernetes versions before 1.8.0 should use rbac.authorization.k8s.io/v1beta1
