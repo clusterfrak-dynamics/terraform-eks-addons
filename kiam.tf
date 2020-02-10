@@ -19,20 +19,20 @@ server:
   useHostNetwork: ${var.kiam["server_use_host_network"]}
   image:
     tag: ${var.kiam["version"]}
-  assumeRoleArn: ${aws_iam_role.eks-kiam-server-role[0].arn}
+  assumeRoleArn: ${var.kiam["enabled"] && var.kiam["create_iam_resources"] ? aws_iam_role.eks-kiam-server-role[0].arn : ""}
   sslCertHostPath: "/etc/pki/ca-trust/extracted/pem"
   extraEnv:
     - name: AWS_DEFAULT_REGION
       value: ${var.aws["region"]}
     - name: AWS_ACCESS_KEY_ID
-      value: ${aws_iam_access_key.eks-kiam-user-key[0].id}
+      value: ${var.kiam["enabled"] && var.kiam["create_iam_resources"] ? aws_iam_access_key.eks-kiam-user-key[0].id : ""}
     - name: AWS_SECRET_ACCESS_KEY
-      value: ${aws_iam_access_key.eks-kiam-user-key[0].secret}
+      value: ${var.kiam["enabled"] && var.kiam["create_iam_resources"] ? aws_iam_access_key.eks-kiam-user-key[0].secret : ""}
 VALUES
 }
 
 resource "aws_iam_policy" "eks-kiam-server-node" {
-  count = var.kiam["create_iam_resources"] ? 1 : 0
+  count = var.kiam["enabled"] && var.kiam["create_iam_resources"] ? 1 : 0
   name  = "tf-eks-${var.cluster-name}-kiam-server-node"
 
   policy = <<EOF
@@ -53,7 +53,7 @@ EOF
 }
 
 resource "aws_iam_role" "eks-kiam-server-role" {
-  count       = var.kiam["create_iam_resources"] ? 1 : 0
+  count       = var.kiam["enabled"] && var.kiam["create_iam_resources"] ? 1 : 0
   name        = "tf-eks-${var.cluster-name}-kiam-server-role"
   description = "Role the Kiam Server process assumes"
 
@@ -78,30 +78,30 @@ EOF
 }
 
 resource "aws_iam_policy" "eks-kiam-server-policy" {
-  count       = var.kiam["create_iam_resources"] ? 1 : 0
+  count       = var.kiam["enabled"] && var.kiam["create_iam_resources"] ? 1 : 0
   name        = "tf-eks-${var.cluster-name}-kiam-server-policy"
   description = "Policy for the Kiam Server process"
   policy      = var.kiam["assume_role_policy"]
 }
 
 resource "aws_iam_user" "eks-kiam-user" {
-  count = var.kiam["create_iam_resources"] ? var.kiam["create_iam_user"] ? 1 : 0 : 0
+  count = var.kiam["enabled"] && var.kiam["create_iam_resources"] && var.kiam["create_iam_user"] ? 1 : 0
   name  = "tf-eks-${var.cluster-name}-kiam-user"
 }
 
 resource "aws_iam_access_key" "eks-kiam-user-key" {
-  count = var.kiam["create_iam_resources"] ? var.kiam["create_iam_user"] ? 1 : 0 : 0
+  count = var.kiam["enabled"] && var.kiam["create_iam_resources"] && var.kiam["create_iam_user"] ? 1 : 0
   user  = aws_iam_user.eks-kiam-user[0].name
 }
 
 resource "aws_iam_user_policy_attachment" "eks-kiam-user" {
-  count      = var.kiam["create_iam_resources"] ? var.kiam["create_iam_user"] ? 1 : 0 : 0
+  count      = var.kiam["enabled"] && var.kiam["create_iam_resources"] && var.kiam["create_iam_user"] ? 1 : 0
   user       = aws_iam_user.eks-kiam-user[0].name
   policy_arn = aws_iam_policy.eks-kiam-server-node[0].arn
 }
 
 resource "aws_iam_role_policy_attachment" "eks-kiam-server-policy" {
-  count      = var.kiam["create_iam_resources"] ? 1 : 0
+  count      = var.kiam["enabled"] && var.kiam["create_iam_resources"] ? 1 : 0
   role       = aws_iam_role.eks-kiam-server-role[0].name
   policy_arn = aws_iam_policy.eks-kiam-server-policy[0].arn
 }
@@ -133,7 +133,7 @@ resource "helm_release" "kiam" {
 }
 
 resource "kubernetes_network_policy" "kiam_default_deny" {
-  count = (var.kiam["enabled"] ? 1 : 0) * (var.kiam["default_network_policy"] ? 1 : 0)
+  count = var.kiam["enabled"] && var.kiam["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kiam.*.metadata.0.name[count.index]}-default-deny"
@@ -148,7 +148,7 @@ resource "kubernetes_network_policy" "kiam_default_deny" {
 }
 
 resource "kubernetes_network_policy" "kiam_allow_namespace" {
-  count = (var.kiam["enabled"] ? 1 : 0) * (var.kiam["default_network_policy"] ? 1 : 0)
+  count = var.kiam["enabled"] && var.kiam["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kiam.*.metadata.0.name[count.index]}-allow-namespace"
@@ -174,7 +174,7 @@ resource "kubernetes_network_policy" "kiam_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "kiam_allow_requests" {
-  count = (var.kiam["enabled"] ? 1 : 0) * (var.kiam["default_network_policy"] ? 1 : 0)
+  count = var.kiam["enabled"] && var.kiam["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kiam.*.metadata.0.name[count.index]}-allow-requests"
