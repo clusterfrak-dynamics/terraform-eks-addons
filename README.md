@@ -17,7 +17,6 @@ Provides various addons that are often used on Kubernetes
   * [nginx-ingress](https://github.com/kubernetes/ingress-nginx): processes *Ingress* object and acts as a HTTP/HTTPS proxy (compatible with cert-manager).
   * [metrics-server](https://github.com/kubernetes-incubator/metrics-server): enable metrics API and horizontal pod scaling (HPA).
   * [prometheus-operator](https://github.com/coreos/prometheus-operator): Monitoring / Alerting / Dashboards.
-  * [virtual-kubelet](https://github.com/coreos/prometheus-operator): enables using ECS Fargate as a provider to run workload without EC2 instances.
   * [fluentd-cloudwatch](https://github.com/helm/charts/tree/master/incubator/fluentd-cloudwatch): forwards logs to AWS Cloudwatch.
   * [node-problem-detector](https://github.com/kubernetes/node-problem-detector): Forwards node problems to Kubernetes events
   * [flux](https://github.com/weaveworks/flux): Continous Delivery with Gitops workflow.
