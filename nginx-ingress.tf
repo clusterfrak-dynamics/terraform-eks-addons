@@ -1,8 +1,26 @@
 locals {
+
+  nginx_ingress = merge(
+    local.helm_defaults,
+    {
+      name       = "nginx-ingress"
+      namespace  = "ingress-nginx"
+      chart      = "nginx-ingress"
+      repository = data.helm_repository.stable.metadata[0].name
+      use_nlb    = false
+      use_l7     = false
+    },
+    var.nginx_ingress
+  )
+
   values_nginx_ingress_l4 = <<VALUES
 controller:
+  metrics:
+    enabled: ${local.prometheus_operator["enabled"]}
+    serviceMonitor:
+      enabled: ${local.prometheus_operator["enabled"]}
   image:
-    tag: ${var.nginx_ingress["version"]}
+    tag: ${local.nginx_ingress["version"]}
   updateStrategy:
     type: RollingUpdate
   kind: "DaemonSet"
@@ -14,6 +32,7 @@ controller:
     enabled: true
   config:
     use-proxy-protocol: "true"
+  priorityClassName: ${local.priority_class_ds["create"] ? kubernetes_priority_class.kubernetes_addons_ds[0].metadata[0].name : ""}
 defaultBackend:
   replicaCount: 2
 podSecurityPolicy:
@@ -22,8 +41,12 @@ VALUES
 
   values_nginx_ingress_nlb = <<VALUES
 controller:
+  metrics:
+    enabled: ${local.prometheus_operator["enabled"]}
+    serviceMonitor:
+      enabled: ${local.prometheus_operator["enabled"]}
   image:
-    tag: ${var.nginx_ingress["version"]}
+    tag: ${local.nginx_ingress["version"]}
   updateStrategy:
     type: RollingUpdate
   kind: "DaemonSet"
@@ -35,6 +58,7 @@ controller:
     enabled: true
   config:
     use-proxy-protocol: "false"
+  priorityClassName: ${local.priority_class_ds["create"] ? kubernetes_priority_class.kubernetes_addons_ds[0].metadata[0].name : ""}
 defaultBackend:
   replicaCount: 2
 podSecurityPolicy:
@@ -43,8 +67,12 @@ VALUES
 
   values_nginx_ingress_l7 = <<VALUES
 controller:
+  metrics:
+    enabled: ${local.prometheus_operator["enabled"]}
+    serviceMonitor:
+      enabled: ${local.prometheus_operator["enabled"]}
   image:
-    tag: ${var.nginx_ingress["version"]}
+    tag: ${local.nginx_ingress["version"]}
   updateStrategy:
     type: RollingUpdate
   kind: "DaemonSet"
@@ -63,6 +91,7 @@ controller:
     use-proxy-protocol: "false"
     use-forwarded-headers: "true"
     proxy-real-ip-cidr: "0.0.0.0/0"
+  priorityClassName: ${local.priority_class_ds["create"] ? kubernetes_priority_class.kubernetes_addons_ds[0].metadata[0].name : ""}
 defaultBackend:
   replicaCount: 2
 podSecurityPolicy:
@@ -72,38 +101,51 @@ VALUES
 }
 
 resource "kubernetes_namespace" "nginx_ingress" {
-  count = var.nginx_ingress["enabled"] ? 1 : 0
+  count = local.nginx_ingress["enabled"] ? 1 : 0
 
   metadata {
     labels = {
-      name = var.nginx_ingress["namespace"]
+      name = local.nginx_ingress["namespace"]
     }
 
-    name = var.nginx_ingress["namespace"]
+    name = local.nginx_ingress["namespace"]
   }
 }
 
 resource "helm_release" "nginx_ingress" {
-  count         = var.nginx_ingress["enabled"] ? 1 : 0
-  repository    = data.helm_repository.stable.metadata[0].name
-  name          = "nginx-ingress"
-  chart         = "nginx-ingress"
-  version       = var.nginx_ingress["chart_version"]
-  timeout       = var.nginx_ingress["timeout"]
-  force_update  = var.nginx_ingress["force_update"]
-  recreate_pods = var.nginx_ingress["recreate_pods"]
-  wait          = var.nginx_ingress["wait"]
-  values = concat(
-    [
-      var.nginx_ingress["use_nlb"] ? local.values_nginx_ingress_nlb : var.nginx_ingress["use_l7"] ? local.values_nginx_ingress_l7 : local.values_nginx_ingress_l4,
-    ],
-    [var.nginx_ingress["extra_values"]],
-  )
+  count                 = local.nginx_ingress["enabled"] ? 1 : 0
+  repository            = local.nginx_ingress["repository"]
+  name                  = local.nginx_ingress["name"]
+  chart                 = local.nginx_ingress["chart"]
+  version               = local.nginx_ingress["chart_version"]
+  timeout               = local.nginx_ingress["timeout"]
+  force_update          = local.nginx_ingress["force_update"]
+  recreate_pods         = local.nginx_ingress["recreate_pods"]
+  wait                  = local.nginx_ingress["wait"]
+  atomic                = local.nginx_ingress["atomic"]
+  cleanup_on_fail       = local.nginx_ingress["cleanup_on_fail"]
+  dependency_update     = local.nginx_ingress["dependency_update"]
+  disable_crd_hooks     = local.nginx_ingress["disable_crd_hooks"]
+  disable_webhooks      = local.nginx_ingress["disable_webhooks"]
+  render_subchart_notes = local.nginx_ingress["render_subchart_notes"]
+  replace               = local.nginx_ingress["replace"]
+  reset_values          = local.nginx_ingress["reset_values"]
+  reuse_values          = local.nginx_ingress["reuse_values"]
+  skip_crds             = local.nginx_ingress["skip_crds"]
+  verify                = local.nginx_ingress["verify"]
+  values = [
+    local.nginx_ingress["use_nlb"] ? local.values_nginx_ingress_nlb : local.nginx_ingress["use_l7"] ? local.values_nginx_ingress_l7 : local.values_nginx_ingress_l4,
+    local.nginx_ingress["extra_values"],
+  ]
   namespace = kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]
+
+  depends_on = [
+    helm_release.prometheus_operator
+  ]
 }
 
 resource "kubernetes_network_policy" "nginx_ingress_default_deny" {
-  count = (var.nginx_ingress["enabled"] ? 1 : 0) * (var.nginx_ingress["default_network_policy"] ? 1 : 0)
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-default-deny"
@@ -118,7 +160,7 @@ resource "kubernetes_network_policy" "nginx_ingress_default_deny" {
 }
 
 resource "kubernetes_network_policy" "nginx_ingress_allow_namespace" {
-  count = (var.nginx_ingress["enabled"] ? 1 : 0) * (var.nginx_ingress["default_network_policy"] ? 1 : 0)
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-allow-namespace"
@@ -144,7 +186,7 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "nginx_ingress_allow_ingress" {
-  count = (var.nginx_ingress["enabled"] ? 1 : 0) * (var.nginx_ingress["default_network_policy"] ? 1 : 0)
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-allow-ingress"
@@ -172,7 +214,7 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_ingress" {
 
       from {
         ip_block {
-          cidr = var.nginx_ingress["ingress_cidr"]
+          cidr = local.nginx_ingress["ingress_cidr"]
         }
       }
     }
@@ -182,7 +224,7 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_ingress" {
 }
 
 resource "kubernetes_network_policy" "nginx_ingress_allow_monitoring" {
-  count = (var.nginx_ingress["enabled"] ? 1 : 0) * (var.nginx_ingress["default_network_policy"] ? 1 : 0) * (var.prometheus_operator["enabled"] ? 1 : 0)
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-allow-monitoring"
@@ -211,4 +253,3 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_monitoring" {
     policy_types = ["Ingress"]
   }
 }
-

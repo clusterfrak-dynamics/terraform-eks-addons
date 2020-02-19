@@ -9,13 +9,10 @@ spec:
     email: '${acme_email}'
     privateKeySecretRef:
       name: letsencrypt-staging
-    http01: {}
-    dns01:
-      providers:
-        - name: route53
-          route53:
-            region: '${aws_region}'
-
+    solvers:
+    - dns01:
+        route53:
+          region: '${aws_region}'
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: ClusterIssuer
@@ -27,9 +24,7 @@ spec:
     email: '${acme_email}'
     privateKeySecretRef:
       name: letsencrypt
-    http01: {}
-    dns01:
-      providers:
-        - name: route53
-          route53:
-            region: '${aws_region}'
+    solvers:
+    - dns01:
+        route53:
+          region: '${aws_region}'

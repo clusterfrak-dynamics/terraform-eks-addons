@@ -1,50 +1,67 @@
 locals {
+  npd = merge(
+    local.helm_defaults,
+    {
+      name       = "node-problem-detector"
+      namespace  = "node-problem-detector"
+      chart      = "node-problem-detector"
+      repository = data.helm_repository.stable.metadata[0].name
+    },
+    var.npd
+  )
+
   values_npd = <<VALUES
 rbac:
   pspEnabled: true
 image:
-  tag: ${var.npd["version"]}
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: node-role.kubernetes.io/node
-          operator: Exists
-tolerations:
-  - operator: Exists
+  tag: ${local.npd["version"]}
+priorityClassName: ${local.priority_class_ds["create"] ? kubernetes_priority_class.kubernetes_addons_ds[0].metadata[0].name : ""}
 VALUES
 
 }
 
 resource "kubernetes_namespace" "node_problem_detector" {
-  count = var.npd["enabled"] ? 1 : 0
+  count = local.npd["enabled"] ? 1 : 0
 
   metadata {
     labels = {
-      name = var.npd["namespace"]
+      name = local.npd["namespace"]
     }
 
-    name = var.npd["namespace"]
+    name = local.npd["namespace"]
   }
 }
 
 resource "helm_release" "node_problem_detector" {
-  count         = var.npd["enabled"] ? 1 : 0
-  repository    = data.helm_repository.stable.metadata[0].name
-  name          = "node-problem-detector"
-  chart         = "node-problem-detector"
-  version       = var.npd["chart_version"]
-  timeout       = var.npd["timeout"]
-  force_update  = var.npd["force_update"]
-  recreate_pods = var.npd["recreate_pods"]
-  wait          = var.npd["wait"]
-  values        = concat([local.values_npd], [var.npd["extra_values"]])
-  namespace     = kubernetes_namespace.node_problem_detector.*.metadata.0.name[count.index]
+  count                 = local.npd["enabled"] ? 1 : 0
+  repository            = data.helm_repository.stable.metadata[0].name
+  name                  = "node-problem-detector"
+  chart                 = "node-problem-detector"
+  version               = local.npd["chart_version"]
+  timeout               = local.npd["timeout"]
+  force_update          = local.npd["force_update"]
+  recreate_pods         = local.npd["recreate_pods"]
+  wait                  = local.npd["wait"]
+  atomic                = local.npd["atomic"]
+  cleanup_on_fail       = local.npd["cleanup_on_fail"]
+  dependency_update     = local.npd["dependency_update"]
+  disable_crd_hooks     = local.npd["disable_crd_hooks"]
+  disable_webhooks      = local.npd["disable_webhooks"]
+  render_subchart_notes = local.npd["render_subchart_notes"]
+  replace               = local.npd["replace"]
+  reset_values          = local.npd["reset_values"]
+  reuse_values          = local.npd["reuse_values"]
+  skip_crds             = local.npd["skip_crds"]
+  verify                = local.npd["verify"]
+  values = [
+    local.values_npd,
+    local.npd["extra_values"]
+  ]
+  namespace = kubernetes_namespace.node_problem_detector.*.metadata.0.name[count.index]
 }
 
 resource "kubernetes_network_policy" "npd_default_deny" {
-  count = (var.npd["enabled"] ? 1 : 0) * (var.npd["default_network_policy"] ? 1 : 0)
+  count = local.npd["enabled"] && local.npd["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.node_problem_detector.*.metadata.0.name[count.index]}-default-deny"
@@ -59,7 +76,7 @@ resource "kubernetes_network_policy" "npd_default_deny" {
 }
 
 resource "kubernetes_network_policy" "npd_allow_namespace" {
-  count = (var.npd["enabled"] ? 1 : 0) * (var.npd["default_network_policy"] ? 1 : 0)
+  count = local.npd["enabled"] && local.npd["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.node_problem_detector.*.metadata.0.name[count.index]}-allow-namespace"

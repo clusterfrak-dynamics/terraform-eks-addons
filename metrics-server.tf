@@ -1,47 +1,70 @@
 locals {
+  metrics_server = merge(
+    local.helm_defaults,
+    {
+      name       = "metrics-server"
+      namespace  = "metrics-server"
+      chart      = "metrics-server"
+      repository = data.helm_repository.stable.metadata[0].name
+    },
+    var.metrics_server
+  )
+
   values_metrics_server = <<VALUES
 image:
-  tag: ${var.metrics_server["version"]}
+  tag: ${local.metrics_server["version"]}
 args:
   - --logtostderr
   - --kubelet-preferred-address-types=InternalIP,ExternalIP
 rbac:
   pspEnabled: true
+priorityClassName: ${local.priority_class["create"] ? kubernetes_priority_class.kubernetes_addons[0].metadata[0].name : ""}
 VALUES
 
 }
 
 resource "kubernetes_namespace" "metrics_server" {
-  count = var.metrics_server["enabled"] ? 1 : 0
+  count = local.metrics_server["enabled"] ? 1 : 0
 
   metadata {
     labels = {
-      name = var.metrics_server["namespace"]
+      name = local.metrics_server["namespace"]
     }
 
-    name = var.metrics_server["namespace"]
+    name = local.metrics_server["namespace"]
   }
 }
 
 resource "helm_release" "metrics_server" {
-  count         = var.metrics_server["enabled"] ? 1 : 0
-  repository    = data.helm_repository.stable.metadata[0].name
-  name          = "metrics-server"
-  chart         = "metrics-server"
-  version       = var.metrics_server["chart_version"]
-  timeout       = var.metrics_server["timeout"]
-  force_update  = var.metrics_server["force_update"]
-  recreate_pods = var.metrics_server["recreate_pods"]
-  wait          = var.metrics_server["wait"]
-  values = concat(
-    [local.values_metrics_server],
-    [var.metrics_server["extra_values"]],
-  )
+  count                 = local.metrics_server["enabled"] ? 1 : 0
+  repository            = local.metrics_server["repository"]
+  name                  = local.metrics_server["name"]
+  chart                 = local.metrics_server["chart"]
+  version               = local.metrics_server["chart_version"]
+  timeout               = local.metrics_server["timeout"]
+  force_update          = local.metrics_server["force_update"]
+  recreate_pods         = local.metrics_server["recreate_pods"]
+  wait                  = local.metrics_server["wait"]
+  atomic                = local.metrics_server["atomic"]
+  cleanup_on_fail       = local.metrics_server["cleanup_on_fail"]
+  dependency_update     = local.metrics_server["dependency_update"]
+  disable_crd_hooks     = local.metrics_server["disable_crd_hooks"]
+  disable_webhooks      = local.metrics_server["disable_webhooks"]
+  render_subchart_notes = local.metrics_server["render_subchart_notes"]
+  replace               = local.metrics_server["replace"]
+  reset_values          = local.metrics_server["reset_values"]
+  reuse_values          = local.metrics_server["reuse_values"]
+  skip_crds             = local.metrics_server["skip_crds"]
+  verify                = local.metrics_server["verify"]
+  values = [
+    local.values_metrics_server,
+    local.metrics_server["extra_values"]
+  ]
   namespace = kubernetes_namespace.metrics_server.*.metadata.0.name[count.index]
 }
 
 resource "kubernetes_network_policy" "metrics_server_default_deny" {
-  count = (var.metrics_server["enabled"] ? 1 : 0) * (var.metrics_server["default_network_policy"] ? 1 : 0)
+  count = local.metrics_server["enabled"] && local.metrics_server["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.metrics_server.*.metadata.0.name[count.index]}-default-deny"
@@ -56,7 +79,7 @@ resource "kubernetes_network_policy" "metrics_server_default_deny" {
 }
 
 resource "kubernetes_network_policy" "metrics_server_allow_namespace" {
-  count = (var.metrics_server["enabled"] ? 1 : 0) * (var.metrics_server["default_network_policy"] ? 1 : 0)
+  count = local.metrics_server["enabled"] && local.metrics_server["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.metrics_server.*.metadata.0.name[count.index]}-allow-namespace"
@@ -82,7 +105,7 @@ resource "kubernetes_network_policy" "metrics_server_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "metrics_server_allow_control_plane" {
-  count = (var.metrics_server["enabled"] ? 1 : 0) * (var.metrics_server["default_network_policy"] ? 1 : 0)
+  count = local.metrics_server["enabled"] && local.metrics_server["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.metrics_server.*.metadata.0.name[count.index]}-allow-control-plane"
@@ -104,14 +127,12 @@ resource "kubernetes_network_policy" "metrics_server_allow_control_plane" {
         protocol = "TCP"
       }
 
-      from {
-        ip_block {
-          cidr = var.metrics_server["control_plane_private_cidr"]
-        }
-      }
-      from {
-        ip_block {
-          cidr = var.metrics_server["control_plane_public_cidr"]
+      dynamic "from" {
+        for_each = local.metrics_server["allowed_cidrs"]
+        content {
+          ip_block {
+            cidr = from.value
+          }
         }
       }
     }

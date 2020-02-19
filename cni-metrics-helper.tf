@@ -1,12 +1,39 @@
+locals {
+  cni_metrics_helper = var.cni_metrics_helper
+}
+
+module "iam_assumable_role_cni_metrics_helper" {
+  source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+  version                       = "~> v2.6.0"
+  create_role                   = local.cni_metrics_helper["enabled"] && local.cni_metrics_helper["create_iam_resources_irsa"]
+  role_name                     = "tf-eks-${var.cluster-name}-cni-metrics-helper-irsa"
+  provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")
+  role_policy_arns              = local.cni_metrics_helper["enabled"] && local.cni_metrics_helper["create_iam_resources_irsa"] ? [aws_iam_policy.eks-cni-metrics-helper[0].arn] : []
+  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cni-metrics-helper"]
+}
+
 resource "aws_iam_policy" "eks-cni-metrics-helper" {
-  count  = var.cni_metrics_helper["create_iam_resources_kiam"] ? 1 : 0
+  count  = local.cni_metrics_helper["enabled"] && (local.cni_metrics_helper["create_iam_resources_kiam"] || local.cni_metrics_helper["create_iam_resources_irsa"]) ? 1 : 0
   name   = "tf-eks-${var.cluster-name}-cni-metrics-helper"
-  policy = var.cni_metrics_helper["iam_policy"]
+  policy = local.cni_metrics_helper["iam_policy_override"] == "" ? data.aws_iam_policy_document.cni_metrics_helper.json : local.cni_metrics_helper["iam_policy_override"]
+}
+
+data "aws_iam_policy_document" "cni_metrics_helper" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "cloudwatch:PutMetricData",
+      "ec2:DescribeTags"
+    ]
+
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role" "eks-cni-metrics-helper-kiam" {
   name  = "tf-eks-${var.cluster-name}-cni-metrics-helper-kiam"
-  count = var.cni_metrics_helper["create_iam_resources_kiam"] ? 1 : 0
+  count = local.cni_metrics_helper["enabled"] && local.cni_metrics_helper["create_iam_resources_kiam"] ? 1 : 0
 
   assume_role_policy = <<POLICY
 {
@@ -34,31 +61,24 @@ POLICY
 }
 
 resource "aws_iam_role_policy_attachment" "eks-cni-metrics-helper-kiam" {
-  count      = var.cni_metrics_helper["create_iam_resources_kiam"] ? 1 : 0
+  count      = local.cni_metrics_helper["enabled"] && local.cni_metrics_helper["create_iam_resources_kiam"] ? 1 : 0
   role       = aws_iam_role.eks-cni-metrics-helper-kiam[count.index].name
   policy_arn = aws_iam_policy.eks-cni-metrics-helper[count.index].arn
 }
 
-data "template_file" "cni_metrics_helper" {
-  count    = var.cni_metrics_helper["enabled"] ? 1 : 0
-  template = file("templates/cni-metrics-helper.yaml")
-  vars = {
-    cni_metrics_helper_role_arn = var.cni_metrics_helper["create_iam_resources_kiam"] ? aws_iam_role.eks-cni-metrics-helper-kiam[count.index].arn : ""
-    cni_metrics_helper_version  = var.cni_metrics_helper["version"]
-  }
-}
-
-resource "null_resource" "cni_metrics_helper" {
-  count = var.cni_metrics_helper["enabled"] ? 1 : 0
-  triggers = {
-    always = data.template_file.cni_metrics_helper.*.rendered[count.index]
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl --kubeconfig=kubeconfig apply -f -<<EOF\n${data.template_file.cni_metrics_helper.*.rendered[count.index]}\nEOF"
-  }
-
-  depends_on = [
-    helm_release.kiam
-  ]
+#data "kubectl_path_documents" "cni_metrics_helper" {
+#  pattern = "./templates/cni-metrics-helper.yaml"
+#  vars = {
+#    cni_metrics_helper_role_arn_kiam = local.cni_metrics_helper["create_iam_resources_kiam"] ? aws_iam_role.eks-cni-metrics-helper-kiam[0].arn : ""
+#    cni_metrics_helper_role_arn_irsa = local.cni_metrics_helper["create_iam_resources_irsa"] ? module.iam_assumable_role_cni_metrics_helper.this_iam_role_arn : ""
+#    cni_metrics_helper_version       = local.cni_metrics_helper["version"]
+#  }
+#}
+resource "kubectl_manifest" "cni_metrics_helper" {
+  count = local.cni_metrics_helper["enabled"] ? 1 : 0
+  yaml_body = templatefile("./templates/cni-metrics-helper.yaml", {
+    cni_metrics_helper_role_arn_kiam = local.cni_metrics_helper["create_iam_resources_kiam"] ? aws_iam_role.eks-cni-metrics-helper-kiam[0].arn : ""
+    cni_metrics_helper_role_arn_irsa = local.cni_metrics_helper["create_iam_resources_irsa"] ? module.iam_assumable_role_cni_metrics_helper.this_iam_role_arn : ""
+    cni_metrics_helper_version       = local.cni_metrics_helper["version"]
+  })
 }

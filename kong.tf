@@ -1,49 +1,89 @@
 locals {
+
+  kong = merge(
+    local.helm_defaults,
+    {
+      name       = "kong"
+      namespace  = "kong"
+      chart      = "kong"
+      repository = data.helm_repository.kong.metadata[0].name
+    },
+    var.kong
+  )
+
   values_kong = <<VALUES
 image:
-  tag: ${var.kong["version"]}
+  tag: ${local.kong["version"]}
 ingressController:
   enabled: true
+  installCRDs: false
 postgresql:
   enabled: false
 env:
   database: "off"
 admin:
   type: ClusterIP
+podSecurityPolicy:
+  enabled: true
+autoscaling:
+  enabled: true
+replicaCount: 2
+serviceMonitor:
+  enabled: ${local.prometheus_operator["enabled"]}
 VALUES
 }
 
+data "helm_repository" "kong" {
+  name = "kong"
+  url  = "https://charts.konghq.com"
+}
+
 resource "kubernetes_namespace" "kong" {
-  count = var.kong["enabled"] ? 1 : 0
+  count = local.kong["enabled"] ? 1 : 0
 
   metadata {
     labels = {
-      name = var.kong["namespace"]
+      name = local.kong["namespace"]
     }
 
-    name = var.kong["namespace"]
+    name = local.kong["namespace"]
   }
 }
 
 resource "helm_release" "kong" {
-  count         = var.kong["enabled"] ? 1 : 0
-  repository    = data.helm_repository.kong.metadata[0].name
-  name          = "kong"
-  chart         = "kong"
-  version       = var.kong["chart_version"]
-  timeout       = var.kong["timeout"]
-  force_update  = var.kong["force_update"]
-  recreate_pods = var.kong["recreate_pods"]
-  wait          = var.kong["wait"]
-  values = concat(
-    [local.values_kong],
-    [var.kong["extra_values"]],
-  )
+  count                 = local.kong["enabled"] ? 1 : 0
+  repository            = local.kong["repository"]
+  name                  = local.kong["name"]
+  chart                 = local.kong["chart"]
+  version               = local.kong["chart_version"]
+  timeout               = local.kong["timeout"]
+  force_update          = local.kong["force_update"]
+  recreate_pods         = local.kong["recreate_pods"]
+  wait                  = local.kong["wait"]
+  atomic                = local.kong["atomic"]
+  cleanup_on_fail       = local.kong["cleanup_on_fail"]
+  dependency_update     = local.kong["dependency_update"]
+  disable_crd_hooks     = local.kong["disable_crd_hooks"]
+  disable_webhooks      = local.kong["disable_webhooks"]
+  render_subchart_notes = local.kong["render_subchart_notes"]
+  replace               = local.kong["replace"]
+  reset_values          = local.kong["reset_values"]
+  reuse_values          = local.kong["reuse_values"]
+  skip_crds             = local.kong["skip_crds"]
+  verify                = local.kong["verify"]
+  values = [
+    local.values_kong,
+    local.kong["extra_values"]
+  ]
   namespace = kubernetes_namespace.kong.*.metadata.0.name[count.index]
+
+  depends_on = [
+    helm_release.prometheus_operator
+  ]
 }
 
 resource "kubernetes_network_policy" "kong_default_deny" {
-  count = (var.kong["enabled"] ? 1 : 0) * (var.kong["default_network_policy"] ? 1 : 0)
+  count = local.kong["enabled"] && local.kong["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kong.*.metadata.0.name[count.index]}-default-deny"
@@ -58,7 +98,7 @@ resource "kubernetes_network_policy" "kong_default_deny" {
 }
 
 resource "kubernetes_network_policy" "kong_allow_namespace" {
-  count = (var.kong["enabled"] ? 1 : 0) * (var.kong["default_network_policy"] ? 1 : 0)
+  count = local.kong["enabled"] && local.kong["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kong.*.metadata.0.name[count.index]}-allow-namespace"
@@ -84,7 +124,7 @@ resource "kubernetes_network_policy" "kong_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "kong_allow_ingress" {
-  count = (var.kong["enabled"] ? 1 : 0) * (var.kong["default_network_policy"] ? 1 : 0)
+  count = local.kong["enabled"] && local.kong["default_network_policy"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kong.*.metadata.0.name[count.index]}-allow-ingress"
@@ -112,7 +152,7 @@ resource "kubernetes_network_policy" "kong_allow_ingress" {
 
       from {
         ip_block {
-          cidr = var.kong["ingress_cidr"]
+          cidr = local.kong["ingress_cidr"]
         }
       }
     }
@@ -122,7 +162,7 @@ resource "kubernetes_network_policy" "kong_allow_ingress" {
 }
 
 resource "kubernetes_network_policy" "kong_allow_monitoring" {
-  count = (var.kong["enabled"] ? 1 : 0) * (var.kong["default_network_policy"] ? 1 : 0) * (var.prometheus_operator["enabled"] ? 1 : 0)
+  count = local.kong["enabled"] && local.kong["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kong.*.metadata.0.name[count.index]}-allow-monitoring"

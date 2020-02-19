@@ -1,103 +1,131 @@
 variable "cluster-name" {
-  default = "sample-cluster"
-  type    = string
+  description = "Name of the Kubernetes cluster"
+  default     = "sample-cluster"
+  type        = string
 }
 variable "aws" {
-  type    = map(string)
-  default = {}
+  description = "AWS provider customization"
+  type        = any
+  default     = {}
 }
 
 variable "eks" {
-  type    = map(string)
-  default = {}
+  description = "EKS cluster inputs"
+  type        = any
+  default     = {}
 }
 
 variable "nginx_ingress" {
-  type    = map(string)
-  default = {}
+  description = "Customize nginx-ingress chart, see `nginx-ingress.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "cluster_autoscaler" {
-  type    = map(string)
-  default = {}
+  description = "Customize cluster-autoscaler chart, see `cluster_autoscaler.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "external_dns" {
-  type    = map(string)
-  default = {}
+  description = "Customize external-dns chart, see `external_dns.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "cert_manager" {
-  type    = map(string)
-  default = {}
+  description = "Customize cert-manager chart, see `cert_manager.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "kiam" {
-  type    = map(string)
-  default = {}
+  description = "Customize kiam chart, see `kiam.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "metrics_server" {
-  type    = map(string)
-  default = {}
+  description = "Customize metrics-server chart, see `metrics_server.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "prometheus_operator" {
-  type    = map(string)
-  default = {}
-}
-
-variable "virtual_kubelet" {
-  type    = map(string)
-  default = {}
+  description = "Customize prometheus-operator chart, see `kube_prometheus.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "fluentd_cloudwatch" {
-  type    = map(string)
-  default = {}
+  description = "Customize fluentd-cloudwatch chart, see `fluentd-cloudwatch.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "npd" {
-  type    = map(string)
-  default = {}
+  description = "Customize node-problem-detector chart, see `npd.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "flux" {
-  type    = map(string)
-  default = {}
+  description = "Customize fluxcd chart, see `flux.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "sealed_secrets" {
-  type    = map(string)
-  default = {}
+  description = "Customize sealed-secrets chart, see `sealed-secrets.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
-variable "istio" {
-  type    = map(string)
-  default = {}
-}
 
 variable "cni_metrics_helper" {
-  type    = map(string)
-  default = {}
+  description = "Customize cni-metrics-helper deployment, see `cni_metrics_helper.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "kong" {
-  type    = map(string)
-  default = {}
-}
-
-variable "rancher" {
-  type    = map(string)
-  default = {}
+  description = "Customize kong-ingress chart, see `kong.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "keycloak" {
-  type    = map(string)
-  default = {}
+  description = "Customize keycloak chart, see `keycloak.tf` for supported values"
+  type        = any
+  default     = {}
 }
 
 variable "karma" {
-  type    = map(string)
-  default = {}
+  description = "Customize karma chart, see `karma.tf` for supported values"
+  type        = any
+  default     = {}
+}
+
+variable "istio_operator" {
+  description = "Customize istio operator deployment, see `istio_operator.tf` for supported values"
+  type        = any
+  default     = {}
+}
+
+variable "helm_defaults" {
+  description = "Customize default Helm behavior"
+  type        = any
+  default     = {}
+}
+
+variable "priority_class" {
+  description = "Customize a priority class for addons"
+  type        = any
+  default     = {}
+}
+
+variable "priority_class_ds" {
+  description = "Customize a priority class for addons daemonsets"
+  type        = any
+  default     = {}
 }
