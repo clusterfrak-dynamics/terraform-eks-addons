@@ -13,7 +13,7 @@ locals {
 
   values_kong = <<VALUES
 image:
-  tag: ${local.kong["version"]}
+  tag: "${local.kong["version"]}"
 ingressController:
   enabled: true
   installCRDs: false
