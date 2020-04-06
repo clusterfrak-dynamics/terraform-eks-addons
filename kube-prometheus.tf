@@ -158,7 +158,7 @@ resource "kubernetes_network_policy" "prometheus_operator_allow_ingress_nginx" {
   spec {
     pod_selector {
       match_expressions {
-        key      = "app"
+        key      = "app.kubernetes.io/name"
         operator = "In"
         values   = ["grafana"]
       }
