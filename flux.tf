@@ -6,7 +6,7 @@ locals {
       name                 = "flux"
       namespace            = "flux"
       chart                = "flux"
-      repository           = data.helm_repository.flux.metadata[0].name
+      repository           = "https://charts.fluxcd.io"
       service_account_name = "flux"
     },
     var.flux
@@ -31,11 +31,6 @@ prometheus:
   serviceMonitor:
     create: ${local.prometheus_operator["enabled"]}
 VALUES
-}
-
-data "helm_repository" "flux" {
-  name = "flux"
-  url  = "https://charts.fluxcd.io"
 }
 
 module "iam_assumable_role_flux" {

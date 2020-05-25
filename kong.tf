@@ -6,7 +6,7 @@ locals {
       name       = "kong"
       namespace  = "kong"
       chart      = "kong"
-      repository = data.helm_repository.kong.metadata[0].name
+      repository = "https://charts.konghq.com"
     },
     var.kong
   )
@@ -31,11 +31,6 @@ replicaCount: 2
 serviceMonitor:
   enabled: ${local.prometheus_operator["enabled"]}
 VALUES
-}
-
-data "helm_repository" "kong" {
-  name = "kong"
-  url  = "https://charts.konghq.com"
 }
 
 resource "kubernetes_namespace" "kong" {

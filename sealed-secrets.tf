@@ -6,7 +6,7 @@ locals {
       name       = "sealed-secrets"
       namespace  = "sealed-secrets"
       chart      = "sealed-secrets"
-      repository = data.helm_repository.stable.metadata[0].name
+      repository = "https://kubernetes-charts.storage.googleapis.com/"
     },
     var.sealed_secrets
   )

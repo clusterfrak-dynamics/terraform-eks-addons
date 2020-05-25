@@ -5,7 +5,7 @@ locals {
       name       = "node-problem-detector"
       namespace  = "node-problem-detector"
       chart      = "node-problem-detector"
-      repository = data.helm_repository.stable.metadata[0].name
+      repository = "https://kubernetes-charts.storage.googleapis.com/"
     },
     var.npd
   )
@@ -34,9 +34,9 @@ resource "kubernetes_namespace" "node_problem_detector" {
 
 resource "helm_release" "node_problem_detector" {
   count                 = local.npd["enabled"] ? 1 : 0
-  repository            = data.helm_repository.stable.metadata[0].name
-  name                  = "node-problem-detector"
-  chart                 = "node-problem-detector"
+  repository            = local.npd["repository"]
+  name                  = local.npd["name"]
+  chart                 = local.npd["chart"]
   version               = local.npd["chart_version"]
   timeout               = local.npd["timeout"]
   force_update          = local.npd["force_update"]

@@ -5,7 +5,7 @@ locals {
       name       = "metrics-server"
       namespace  = "metrics-server"
       chart      = "metrics-server"
-      repository = data.helm_repository.stable.metadata[0].name
+      repository = "https://kubernetes-charts.storage.googleapis.com/"
     },
     var.metrics_server
   )

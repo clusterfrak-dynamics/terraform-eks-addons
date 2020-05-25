@@ -5,7 +5,7 @@ locals {
       name              = "keycloak"
       namespace         = "keycloak"
       chart             = "keycloak"
-      repository        = data.helm_repository.codecentric.metadata[0].name
+      repository        = "https://codecentric.github.io/helm-charts"
       prometheus_plugin = true
     },
     var.keycloak
@@ -47,11 +47,6 @@ extraVolumes: |
   - name: deployments
     emptyDir: {}
 VALUES
-}
-
-data "helm_repository" "codecentric" {
-  name = "codecentric"
-  url  = "https://codecentric.github.io/helm-charts"
 }
 
 resource "kubernetes_namespace" "keycloak" {

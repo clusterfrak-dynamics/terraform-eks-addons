@@ -5,7 +5,7 @@ locals {
       name                 = "cluster-autoscaler"
       namespace            = "cluster-autoscaler"
       chart                = "cluster-autoscaler"
-      repository           = data.helm_repository.stable.metadata[0].name
+      repository           = "https://kubernetes-charts.storage.googleapis.com"
       service_account_name = "cluster-autoscaler"
     },
     var.cluster_autoscaler

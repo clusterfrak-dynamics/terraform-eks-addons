@@ -6,7 +6,7 @@ locals {
       name                 = "cert-manager"
       namespace            = "cert-manager"
       chart                = "cert-manager"
-      repository           = data.helm_repository.jetstack.metadata[0].name
+      repository           = "https://charts.jetstack.io"
       service_account_name = "cert-manager"
     },
     var.cert_manager
@@ -33,11 +33,6 @@ securityContext:
   fsGroup: 1001
 VALUES
 
-}
-
-data "helm_repository" "jetstack" {
-  name = "jetstack"
-  url  = "https://charts.jetstack.io"
 }
 
 module "iam_assumable_role_cert_manager" {

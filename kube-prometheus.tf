@@ -5,7 +5,7 @@ locals {
       name                = "prometheus-operator"
       namespace           = "monitoring"
       chart               = "prometheus-operator"
-      repository          = data.helm_repository.stable.metadata[0].name
+      repository          = "https://kubernetes-charts.storage.googleapis.com/"
       kiam_allowed_regexp = "^$"
     },
     var.prometheus_operator

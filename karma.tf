@@ -5,7 +5,7 @@ locals {
       name       = "karma"
       namespace  = "monitoring"
       chart      = "karma"
-      repository = data.helm_repository.stable.metadata[0].name
+      repository = "https://kubernetes-charts-incubator.storage.googleapis.com/"
       create_ns  = false
     },
     var.karma

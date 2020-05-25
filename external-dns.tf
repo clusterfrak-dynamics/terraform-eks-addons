@@ -6,7 +6,7 @@ locals {
       name                 = "external-dns"
       namespace            = "external-dns"
       chart                = "external-dns"
-      repository           = data.helm_repository.bitnami.metadata[0].name
+      repository           = "https://charts.bitnami.com/bitnami"
       service_account_name = "external-dns"
     },
     var.external_dns
@@ -30,11 +30,6 @@ metrics:
     enabled: ${local.prometheus_operator["enabled"]}
 priorityClassName: ${local.priority_class["create"] ? kubernetes_priority_class.kubernetes_addons[0].metadata[0].name : ""}
 VALUES
-}
-
-data "helm_repository" "bitnami" {
-  name = "bitnami"
-  url  = "https://charts.bitnami.com/bitnami"
 }
 
 module "iam_assumable_role_external_dns" {

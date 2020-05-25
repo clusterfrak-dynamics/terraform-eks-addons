@@ -5,7 +5,7 @@ locals {
       name                    = "kiam"
       namespace               = "kiam"
       chart                   = "kiam"
-      repository              = data.helm_repository.uswitch.metadata[0].name
+      repository              = "https://uswitch.github.io/kiam-helm-charts/charts/"
       server_use_host_network = true
     },
     var.kiam
@@ -49,11 +49,6 @@ server:
       enabled: ${local.prometheus_operator["enabled"]}
   priorityClassName: ${local.priority_class["create"] ? kubernetes_priority_class.kubernetes_addons[0].metadata[0].name : ""}
 VALUES
-}
-
-data "helm_repository" "uswitch" {
-  name = "uswitch"
-  url  = "https://uswitch.github.io/kiam-helm-charts/charts/"
 }
 
 data "aws_iam_policy_document" "kiam" {

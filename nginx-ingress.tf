@@ -6,7 +6,7 @@ locals {
       name       = "nginx-ingress"
       namespace  = "ingress-nginx"
       chart      = "nginx-ingress"
-      repository = data.helm_repository.stable.metadata[0].name
+      repository = "https://kubernetes-charts.storage.googleapis.com/"
       use_nlb    = false
       use_l7     = false
     },

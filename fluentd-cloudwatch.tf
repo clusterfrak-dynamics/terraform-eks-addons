@@ -6,7 +6,7 @@ locals {
       name                 = "fluentd-cloudwatch"
       namespace            = "fluentd-cloudwatch"
       chart                = "fluentd-cloudwatch"
-      repository           = data.helm_repository.incubator.metadata[0].name
+      repository           = "https://kubernetes-charts-incubator.storage.googleapis.com"
       service_account_name = "fluentd-cloudwatch"
     },
     var.fluentd_cloudwatch
