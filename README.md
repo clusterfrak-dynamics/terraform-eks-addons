@@ -25,6 +25,7 @@ Provides various addons that are often used on Kubernetes with AWS
   * [cni-metrics-helper](https://docs.aws.amazon.com/eks/latest/userguide/cni-metrics-helper.html): Provides cloudwatch metrics for VPC CNI plugins.
   * [kong](https://konghq.com/kong): API Gateway ingress controller.
   * [keycloak](https://www.keycloak.org/) : Identity and access management
+  * [alb-ingress](https://github.com/kubernetes-sigs/aws-alb-ingress-controller): Use AWS ALB for ingress ressources.
 
 ## Requirements
 
