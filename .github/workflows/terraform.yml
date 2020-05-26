@@ -14,16 +14,19 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+    - name: Install deps
+      run: sudo apt -y install curl jq
 
     - name: Setup Kubectl provider
       run: mkdir -p ~/.terraform.d/plugins && \
-        apt-get -y install curl jq && \
         curl -Ls https://api.github.com/repos/gavinbunney/terraform-provider-kubectl/releases/latest \
         | jq -r ".assets[] | select(.browser_download_url | contains(\"$(uname -s | tr A-Z a-z)\")) | select(.browser_download_url | contains(\"amd64\")) | .browser_download_url" \
         | xargs -n 1 curl -Lo ~/.terraform.d/plugins/terraform-provider-kubectl && \
         chmod +x ~/.terraform.d/plugins/terraform-provider-kubectl
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
 
     - name: Terraform Init
       run: terraform init -backend=false
