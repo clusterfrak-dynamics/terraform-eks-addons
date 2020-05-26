@@ -29,3 +29,8 @@ jobs:
 
     - name: Terraform Format
       run: terraform fmt -check
+
+    - name: Semantic Release
+      uses: codfish/semantic-release-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
