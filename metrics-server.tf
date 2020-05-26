@@ -2,10 +2,15 @@ locals {
   metrics_server = merge(
     local.helm_defaults,
     {
-      name       = "metrics-server"
-      namespace  = "metrics-server"
-      chart      = "metrics-server"
-      repository = "https://kubernetes-charts.storage.googleapis.com/"
+      name                   = "metrics-server"
+      namespace              = "metrics-server"
+      chart                  = "metrics-server"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      enabled                = false
+      chart_version          = "2.11.1"
+      version                = "v0.3.6"
+      default_network_policy = true
+      allowed_cidr           = "0.0.0.0/0"
     },
     var.metrics_server
   )

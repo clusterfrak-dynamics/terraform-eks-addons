@@ -2,10 +2,14 @@ locals {
   npd = merge(
     local.helm_defaults,
     {
-      name       = "node-problem-detector"
-      namespace  = "node-problem-detector"
-      chart      = "node-problem-detector"
-      repository = "https://kubernetes-charts.storage.googleapis.com/"
+      name                   = "node-problem-detector"
+      namespace              = "node-problem-detector"
+      chart                  = "node-problem-detector"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      enabled                = false
+      chart_version          = "1.7.1"
+      version                = "v0.8.1"
+      default_network_policy = true
     },
     var.npd
   )

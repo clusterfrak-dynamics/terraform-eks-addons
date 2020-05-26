@@ -3,10 +3,15 @@ locals {
   kong = merge(
     local.helm_defaults,
     {
-      name       = "kong"
-      namespace  = "kong"
-      chart      = "kong"
-      repository = "https://charts.konghq.com"
+      name                   = "kong"
+      namespace              = "kong"
+      chart                  = "kong"
+      repository             = "https://charts.konghq.com"
+      enabled                = false
+      default_network_policy = true
+      ingress_cidr           = "0.0.0.0/0"
+      chart_version          = "1.4.1"
+      version                = "2.0"
     },
     var.kong
   )
@@ -157,7 +162,7 @@ resource "kubernetes_network_policy" "kong_allow_ingress" {
 }
 
 resource "kubernetes_network_policy" "kong_allow_monitoring" {
-  count = local.kong["enabled"] && local.kong["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.kong["enabled"] && local.kong["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kong.*.metadata.0.name[count.index]}-allow-monitoring"

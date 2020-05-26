@@ -2,11 +2,15 @@ locals {
   prometheus_operator = merge(
     local.helm_defaults,
     {
-      name                = "prometheus-operator"
-      namespace           = "monitoring"
-      chart               = "prometheus-operator"
-      repository          = "https://kubernetes-charts.storage.googleapis.com/"
-      kiam_allowed_regexp = "^$"
+      name                   = "prometheus-operator"
+      namespace              = "monitoring"
+      chart                  = "prometheus-operator"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      kiam_allowed_regexp    = "^$"
+      enabled                = false
+      chart_version          = "v8.12.9"
+      allowed_cidr           = "0.0.0.0/0"
+      default_network_policy = true
     },
     var.prometheus_operator
   )
@@ -148,7 +152,7 @@ resource "kubernetes_network_policy" "prometheus_operator_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "prometheus_operator_allow_ingress_nginx" {
-  count = local.prometheus_operator["enabled"] && local.prometheus_operator["default_network_policy"] && var.nginx_ingress["enabled"] ? 1 : 0
+  count = local.prometheus_operator["enabled"] && local.prometheus_operator["default_network_policy"] && local.nginx_ingress["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.prometheus_operator.*.metadata.0.name[count.index]}-allow-ingress-nginx"

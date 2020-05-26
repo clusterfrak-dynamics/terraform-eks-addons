@@ -3,11 +3,21 @@ locals {
   cert_manager = merge(
     local.helm_defaults,
     {
-      name                 = "cert-manager"
-      namespace            = "cert-manager"
-      chart                = "cert-manager"
-      repository           = "https://charts.jetstack.io"
-      service_account_name = "cert-manager"
+      name                           = "cert-manager"
+      namespace                      = "cert-manager"
+      chart                          = "cert-manager"
+      repository                     = "https://charts.jetstack.io"
+      service_account_name           = "cert-manager"
+      create_iam_resources_kiam      = false
+      create_iam_resources_irsa      = true
+      enabled                        = false
+      chart_version                  = "v0.14.1"
+      version                        = "v0.14.1"
+      aws_iam_policy_override        = ""
+      default_network_policy         = true
+      acme_email                     = "contact@acme.com"
+      enable_default_cluster_issuers = false
+      allowed_cidr                   = "0.0.0.0/0"
     },
     var.cert_manager
   )
@@ -244,7 +254,7 @@ resource "kubernetes_network_policy" "cert_manager_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "cert_manager_allow_monitoring" {
-  count = local.cert_manager["enabled"] && local.cert_manager["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.cert_manager["enabled"] && local.cert_manager["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.cert_manager.*.metadata.0.name[count.index]}-allow-monitoring"

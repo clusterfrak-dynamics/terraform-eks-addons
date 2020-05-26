@@ -2,11 +2,20 @@ locals {
   kiam = merge(
     local.helm_defaults,
     {
-      name                    = "kiam"
-      namespace               = "kiam"
-      chart                   = "kiam"
-      repository              = "https://uswitch.github.io/kiam-helm-charts/charts/"
-      server_use_host_network = true
+      name                        = "kiam"
+      namespace                   = "kiam"
+      chart                       = "kiam"
+      repository                  = "https://uswitch.github.io/kiam-helm-charts/charts/"
+      server_use_host_network     = true
+      create_iam_user             = true
+      create_iam_resources        = true
+      enabled                     = false
+      assume_role_policy_override = ""
+      chart_version               = "5.0.7"
+      version                     = "v3.5"
+      iam_policy_override         = ""
+      default_network_policy      = true
+      iam_user                    = ""
     },
     var.kiam
   )
@@ -264,7 +273,7 @@ resource "kubernetes_network_policy" "kiam_allow_requests" {
 }
 
 resource "kubernetes_network_policy" "kiam_allow_monitoring" {
-  count = local.kiam["enabled"] && local.kiam["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.kiam["enabled"] && local.kiam["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.kiam.*.metadata.0.name[count.index]}-allow-monitoring"

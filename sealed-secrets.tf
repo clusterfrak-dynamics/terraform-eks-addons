@@ -3,10 +3,14 @@ locals {
   sealed_secrets = merge(
     local.helm_defaults,
     {
-      name       = "sealed-secrets"
-      namespace  = "sealed-secrets"
-      chart      = "sealed-secrets"
-      repository = "https://kubernetes-charts.storage.googleapis.com/"
+      name                   = "sealed-secrets"
+      namespace              = "sealed-secrets"
+      chart                  = "sealed-secrets"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      enabled                = false
+      chart_version          = "1.8.0"
+      version                = "v0.10.0"
+      default_network_policy = true
     },
     var.sealed_secrets
   )

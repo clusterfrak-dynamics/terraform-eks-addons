@@ -112,6 +112,12 @@ variable "istio_operator" {
   default     = {}
 }
 
+variable "alb_ingress" {
+  description = "Customize alb-ingress chart, see `alb-ingress.tf` for supported values"
+  type        = any
+  default     = {}
+}
+
 variable "helm_defaults" {
   description = "Customize default Helm behavior"
   type        = any

@@ -3,11 +3,19 @@ locals {
   fluentd_cloudwatch = merge(
     local.helm_defaults,
     {
-      name                 = "fluentd-cloudwatch"
-      namespace            = "fluentd-cloudwatch"
-      chart                = "fluentd-cloudwatch"
-      repository           = "https://kubernetes-charts-incubator.storage.googleapis.com"
-      service_account_name = "fluentd-cloudwatch"
+      name                             = "fluentd-cloudwatch"
+      namespace                        = "fluentd-cloudwatch"
+      chart                            = "fluentd-cloudwatch"
+      repository                       = "https://kubernetes-charts-incubator.storage.googleapis.com"
+      service_account_name             = "fluentd-cloudwatch"
+      create_iam_resources_kiam        = false
+      create_iam_resources_irsa        = true
+      enabled                          = false
+      chart_version                    = "0.12.1"
+      version                          = "v1.7.4-debian-cloudwatch-1.0"
+      iam_policy_override              = ""
+      default_network_policy           = true
+      containers_log_retention_in_days = 180
     },
     var.fluentd_cloudwatch
   )

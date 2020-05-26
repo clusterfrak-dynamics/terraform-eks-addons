@@ -1,5 +1,14 @@
 locals {
-  cni_metrics_helper = var.cni_metrics_helper
+  cni_metrics_helper = merge(
+    {
+      create_iam_resources_irsa = true
+      create_iam_resources_kiam = false
+      enabled                   = false
+      version                   = "v1.6.0"
+      iam_policy_override       = ""
+    },
+    var.cni_metrics_helper
+  )
 }
 
 module "iam_assumable_role_cni_metrics_helper" {

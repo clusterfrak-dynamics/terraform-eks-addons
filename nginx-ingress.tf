@@ -3,12 +3,17 @@ locals {
   nginx_ingress = merge(
     local.helm_defaults,
     {
-      name       = "nginx-ingress"
-      namespace  = "ingress-nginx"
-      chart      = "nginx-ingress"
-      repository = "https://kubernetes-charts.storage.googleapis.com/"
-      use_nlb    = false
-      use_l7     = false
+      name                   = "nginx-ingress"
+      namespace              = "ingress-nginx"
+      chart                  = "nginx-ingress"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      use_nlb                = false
+      use_l7                 = false
+      enabled                = false
+      default_network_policy = true
+      ingress_cidr           = "0.0.0.0/0"
+      chart_version          = "1.35.0"
+      version                = "0.30.0"
     },
     var.nginx_ingress
   )
@@ -224,7 +229,7 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_ingress" {
 }
 
 resource "kubernetes_network_policy" "nginx_ingress_allow_monitoring" {
-  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-allow-monitoring"

@@ -3,11 +3,17 @@ locals {
   flux = merge(
     local.helm_defaults,
     {
-      name                 = "flux"
-      namespace            = "flux"
-      chart                = "flux"
-      repository           = "https://charts.fluxcd.io"
-      service_account_name = "flux"
+      name                      = "flux"
+      namespace                 = "flux"
+      chart                     = "flux"
+      repository                = "https://charts.fluxcd.io"
+      service_account_name      = "flux"
+      create_iam_resources_kiam = false
+      create_iam_resources_irsa = true
+      enabled                   = false
+      chart_version             = "1.3.0"
+      version                   = "1.19.0"
+      default_network_policy    = true
     },
     var.flux
   )
@@ -204,7 +210,7 @@ resource "kubernetes_network_policy" "flux_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "flux_allow_monitoring" {
-  count = local.flux["enabled"] && local.flux["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.flux["enabled"] && local.flux["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.flux.*.metadata.0.name[count.index]}-allow-monitoring"

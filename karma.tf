@@ -2,11 +2,15 @@ locals {
   karma = merge(
     local.helm_defaults,
     {
-      name       = "karma"
-      namespace  = "monitoring"
-      chart      = "karma"
-      repository = "https://kubernetes-charts-incubator.storage.googleapis.com/"
-      create_ns  = false
+      name                   = "karma"
+      namespace              = "monitoring"
+      chart                  = "karma"
+      repository             = "https://kubernetes-charts-incubator.storage.googleapis.com/"
+      create_ns              = false
+      enabled                = false
+      chart_version          = "1.4.1"
+      version                = "v0.60"
+      default_network_policy = true
     },
     var.karma
   )

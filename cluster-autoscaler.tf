@@ -2,11 +2,19 @@ locals {
   cluster_autoscaler = merge(
     local.helm_defaults,
     {
-      name                 = "cluster-autoscaler"
-      namespace            = "cluster-autoscaler"
-      chart                = "cluster-autoscaler"
-      repository           = "https://kubernetes-charts.storage.googleapis.com"
-      service_account_name = "cluster-autoscaler"
+      name                      = "cluster-autoscaler"
+      namespace                 = "cluster-autoscaler"
+      chart                     = "cluster-autoscaler"
+      repository                = "https://kubernetes-charts.storage.googleapis.com"
+      service_account_name      = "cluster-autoscaler"
+      create_iam_resources_kiam = false
+      create_iam_resources_irsa = true
+      enabled                   = false
+      chart_version             = "7.3.2"
+      version                   = "v1.16.5"
+      iam_policy_override       = ""
+      default_network_policy    = true
+      cluster_name              = "cluster"
     },
     var.cluster_autoscaler
   )
@@ -217,7 +225,7 @@ resource "kubernetes_network_policy" "cluster_autoscaler_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "cluster_autoscaler_allow_monitoring" {
-  count = local.cluster_autoscaler["enabled"] && local.cluster_autoscaler["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.cluster_autoscaler["enabled"] && local.cluster_autoscaler["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.cluster_autoscaler.*.metadata.0.name[count.index]}-allow-monitoring"

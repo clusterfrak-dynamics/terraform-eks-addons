@@ -2,11 +2,15 @@ locals {
   keycloak = merge(
     local.helm_defaults,
     {
-      name              = "keycloak"
-      namespace         = "keycloak"
-      chart             = "keycloak"
-      repository        = "https://codecentric.github.io/helm-charts"
-      prometheus_plugin = true
+      name                   = "keycloak"
+      namespace              = "keycloak"
+      chart                  = "keycloak"
+      repository             = "https://codecentric.github.io/helm-charts"
+      prometheus_plugin      = true
+      enabled                = false
+      chart_version          = "7.5.0"
+      version                = "9.0.2"
+      default_network_policy = true
     },
     var.keycloak
   )
@@ -132,7 +136,7 @@ resource "kubernetes_network_policy" "keycloak_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "keycloak_allow_monitoring" {
-  count = local.keycloak["enabled"] && local.keycloak["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.keycloak["enabled"] && local.keycloak["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.keycloak.*.metadata.0.name[count.index]}-allow-monitoring"

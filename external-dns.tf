@@ -3,11 +3,18 @@ locals {
   external_dns = merge(
     local.helm_defaults,
     {
-      name                 = "external-dns"
-      namespace            = "external-dns"
-      chart                = "external-dns"
-      repository           = "https://charts.bitnami.com/bitnami"
-      service_account_name = "external-dns"
+      name                      = "external-dns"
+      namespace                 = "external-dns"
+      chart                     = "external-dns"
+      repository                = "https://charts.bitnami.com/bitnami"
+      service_account_name      = "external-dns"
+      create_iam_resources_kiam = false
+      create_iam_resources_irsa = true
+      enabled                   = false
+      chart_version             = "3.0.2"
+      version                   = "0.7.1-debian-10-r61"
+      iam_policy_override       = ""
+      default_network_policy    = true
     },
     var.external_dns
   )
@@ -20,7 +27,8 @@ txtPrefix: "ext-dns-"
 rbac:
  create: true
  pspEnabled: true
- serviceAccountAnnotations:
+serviceAccount:
+  annotations:
     eks.amazonaws.com/role-arn: "${local.external_dns["enabled"] && local.external_dns["create_iam_resources_irsa"] ? module.iam_assumable_role_external_dns.this_iam_role_arn : ""}"
 podAnnotations:
   iam.amazonaws.com/role: "${local.external_dns["enabled"] && local.external_dns["create_iam_resources_kiam"] ? aws_iam_role.eks-external-dns-kiam[0].arn : ""}"
@@ -198,7 +206,7 @@ resource "kubernetes_network_policy" "external_dns_allow_namespace" {
 }
 
 resource "kubernetes_network_policy" "external_dns_allow_monitoring" {
-  count = local.external_dns["enabled"] && local.external_dns["default_network_policy"] && var.prometheus_operator["enabled"] ? 1 : 0
+  count = local.external_dns["enabled"] && local.external_dns["default_network_policy"] && local.prometheus_operator["enabled"] ? 1 : 0
 
   metadata {
     name      = "${kubernetes_namespace.external_dns.*.metadata.0.name[count.index]}-allow-monitoring"
