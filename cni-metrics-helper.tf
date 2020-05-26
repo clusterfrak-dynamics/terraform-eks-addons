@@ -85,6 +85,6 @@ data "kubectl_path_documents" "cni_metrics_helper" {
 }
 
 resource "kubectl_manifest" "cni_metrics_helper" {
-  count = (local.cni_metrics_helper["enabled"] ? 1 : 0) * length(data.kubectl_path_documents.cni_metrics_helper.documents)
+  count     = (local.cni_metrics_helper["enabled"] ? 1 : 0) * length(data.kubectl_path_documents.cni_metrics_helper.documents)
   yaml_body = element(data.kubectl_path_documents.cni_metrics_helper.documents, count.index)
 }
