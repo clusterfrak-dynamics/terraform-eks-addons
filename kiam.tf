@@ -48,7 +48,7 @@ server:
   sslCertHostPath: "/etc/pki/ca-trust/extracted/pem"
   extraEnv:
     - name: AWS_DEFAULT_REGION
-      value: ${var.aws["region"]}
+      value: ${data.aws_region.current.name}
     - name: AWS_ACCESS_KEY_ID
       value: ${local.kiam["enabled"] && local.kiam["create_iam_resources"] ? aws_iam_access_key.eks-kiam-user-key[0].id : ""}
     - name: AWS_SECRET_ACCESS_KEY

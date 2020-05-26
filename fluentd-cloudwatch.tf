@@ -31,7 +31,7 @@ rbac:
 tolerations:
   - operator: Exists
 awsRole: "${local.fluentd_cloudwatch["enabled"] && local.fluentd_cloudwatch["create_iam_resources_kiam"] ? aws_iam_role.eks-fluentd-cloudwatch-kiam[0].arn : ""}"
-awsRegion: "${var.aws["region"]}"
+awsRegion: "${data.aws_region.current.name}"
 logGroupName: "${local.fluentd_cloudwatch["enabled"] ? aws_cloudwatch_log_group.eks-fluentd-cloudwatch-log-group[0].name : ""}"
 extraVars:
   - "{ name: FLUENT_UID, value: '0' }"

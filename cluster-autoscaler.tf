@@ -23,7 +23,7 @@ locals {
 nameOverride: "${local.cluster_autoscaler["name"]}"
 autoDiscovery:
   clusterName: ${local.cluster_autoscaler["cluster_name"]}
-awsRegion: ${var.aws["region"]}
+awsRegion: ${data.aws_region.current.name}
 rbac:
   create: true
   pspEnabled: true

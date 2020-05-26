@@ -187,7 +187,7 @@ data "kubectl_path_documents" "cert_manager_cluster_issuers" {
   pattern = "./templates/cert-manager-cluster-issuers.yaml"
   vars = {
     acme_email = local.cert_manager["acme_email"]
-    aws_region = var.aws["region"]
+    aws_region = data.aws_region.current.name
   }
 }
 
