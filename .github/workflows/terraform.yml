@@ -23,14 +23,13 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
-
     - name: Terraform Init
       run: terraform init -backend=false
 
     - name: Terraform Format
       run: terraform fmt -check
 
-    - name: Terraform Format
+    - name: Terraform Validate
       run: terraform validate
       env:
         AWS_REGION: eu-west-3
