@@ -19,6 +19,8 @@ locals {
   )
 
   values_alb_ingress = <<VALUES
+image:
+  tag: "${local.alb_ingress["version"]}"
 autoDiscoverAwsRegion: true
 autoDiscoverAwsVpcID: true
 clusterName: ${var.cluster-name}
