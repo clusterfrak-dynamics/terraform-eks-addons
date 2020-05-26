@@ -4,7 +4,7 @@ locals {
       create_iam_resources_irsa = true
       create_iam_resources_kiam = false
       enabled                   = false
-      version                   = "v1.6.0"
+      version                   = "v1.6.1"
       iam_policy_override       = ""
     },
     var.cni_metrics_helper

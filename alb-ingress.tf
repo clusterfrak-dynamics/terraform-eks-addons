@@ -20,7 +20,12 @@ locals {
 
   values_alb_ingress = <<VALUES
 autoDiscoverAwsRegion: true
+autoDiscoverAwsVpcID: true
 clusterName: ${var.cluster-name}
+rbac:
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${local.alb_ingress["enabled"] && local.alb_ingress["create_iam_resources_irsa"] ? module.iam_assumable_role_alb_ingress.this_iam_role_arn : ""}"
 VALUES
 }
 
@@ -30,7 +35,7 @@ module "iam_assumable_role_alb_ingress" {
   create_role                   = local.alb_ingress["enabled"] && local.alb_ingress["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-alb-ingress-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")
-  role_policy_arns              = local.alb_ingress["create_iam_resources_irsa"] ? [aws_iam_policy.eks-alb-ingress[0].arn] : []
+  role_policy_arns              = local.alb_ingress["enabled"] && local.alb_ingress["create_iam_resources_irsa"] ? [aws_iam_policy.eks-alb-ingress[0].arn] : []
   oidc_fully_qualified_subjects = ["system:serviceaccount:${local.alb_ingress["namespace"]}:${local.alb_ingress["service_account_name"]}"]
 }
 

@@ -10,7 +10,7 @@ locals {
       enabled                = false
       default_network_policy = true
       ingress_cidr           = "0.0.0.0/0"
-      chart_version          = "1.4.1"
+      chart_version          = "1.5.0"
       version                = "2.0"
     },
     var.kong
@@ -22,6 +22,10 @@ image:
 ingressController:
   enabled: true
   installCRDs: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
 postgresql:
   enabled: false
 env:
@@ -35,6 +39,10 @@ autoscaling:
 replicaCount: 2
 serviceMonitor:
   enabled: ${local.prometheus_operator["enabled"]}
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
 VALUES
 }
 

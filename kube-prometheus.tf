@@ -8,7 +8,7 @@ locals {
       repository             = "https://kubernetes-charts.storage.googleapis.com/"
       kiam_allowed_regexp    = "^$"
       enabled                = false
-      chart_version          = "v8.12.9"
+      chart_version          = "v8.13.8"
       allowed_cidr           = "0.0.0.0/0"
       default_network_policy = true
     },

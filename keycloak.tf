@@ -92,6 +92,10 @@ resource "helm_release" "keycloak" {
     local.keycloak["extra_values"]
   ]
   namespace = kubernetes_namespace.keycloak.*.metadata.0.name[count.index]
+
+  depends_on = [
+    helm_release.prometheus_operator
+  ]
 }
 
 resource "kubernetes_network_policy" "keycloak_default_deny" {
@@ -149,7 +153,7 @@ resource "kubernetes_network_policy" "keycloak_allow_monitoring" {
 
     ingress {
       ports {
-        port     = "metrics"
+        port     = "8080"
         protocol = "TCP"
       }
 

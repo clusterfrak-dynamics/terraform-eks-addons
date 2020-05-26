@@ -5,10 +5,10 @@ locals {
       name                   = "karma"
       namespace              = "monitoring"
       chart                  = "karma"
-      repository             = "https://kubernetes-charts-incubator.storage.googleapis.com/"
+      repository             = "https://kubernetes-charts.storage.googleapis.com/"
       create_ns              = false
       enabled                = false
-      chart_version          = "1.4.1"
+      chart_version          = "1.5.1"
       version                = "v0.60"
       default_network_policy = true
     },
@@ -107,3 +107,33 @@ resource "kubernetes_network_policy" "karma_allow_namespace" {
   }
 }
 
+resource "kubernetes_network_policy" "karma_allow_ingress_nginx" {
+  count = local.karma["enabled"] && local.karma["default_network_policy"] ? 1 : 0
+
+  metadata {
+    name      = "karma-allow-ingress-nginx"
+    namespace = local.karma["create_ns"] ? kubernetes_namespace.karma.*.metadata.0.name[count.index] : kubernetes_namespace.prometheus_operator.*.metadata.0.name[count.index]
+  }
+
+  spec {
+    pod_selector {
+      match_expressions {
+        key      = "app.kubernetes.io/name"
+        operator = "In"
+        values   = ["karma"]
+      }
+    }
+
+    ingress {
+      from {
+        namespace_selector {
+          match_labels = {
+            name = kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]
+          }
+        }
+      }
+    }
+
+    policy_types = ["Ingress"]
+  }
+}
