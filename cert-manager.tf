@@ -11,9 +11,9 @@ locals {
       create_iam_resources_kiam      = false
       create_iam_resources_irsa      = true
       enabled                        = false
-      chart_version                  = "v0.14.1"
-      version                        = "v0.14.1"
-      aws_iam_policy_override        = ""
+      chart_version                  = "v0.15.0"
+      version                        = "v0.15.0"
+      iam_policy_override            = ""
       default_network_policy         = true
       acme_email                     = "contact@acme.com"
       enable_default_cluster_issuers = false
@@ -41,6 +41,7 @@ prometheus:
 securityContext:
   enabled: true
   fsGroup: 1001
+installCRDs: true
 VALUES
 
 }
@@ -178,24 +179,8 @@ resource "helm_release" "cert_manager" {
 
   depends_on = [
     helm_release.kiam,
-    helm_release.prometheus_operator,
-    kubectl_manifest.cert_manager_crds
+    helm_release.prometheus_operator
   ]
-}
-
-data "http" "cert_manager_crds" {
-  count = local.cert_manager["enabled"] ? 1 : 0
-  url   = "https://raw.githubusercontent.com/jetstack/cert-manager/${local.cert_manager["version"]}/deploy/manifests/00-crds.yaml"
-}
-
-data "kubectl_file_documents" "cert_manager_crds" {
-  count   = local.cert_manager["enabled"] ? 1 : 0
-  content = data.http.cert_manager_crds[0].body
-}
-
-resource "kubectl_manifest" "cert_manager_crds" {
-  count     = local.cert_manager["enabled"] ? length(data.kubectl_file_documents.cert_manager_crds[0].documents) : 0
-  yaml_body = element(data.kubectl_file_documents.cert_manager_crds[0].documents, count.index)
 }
 
 data "kubectl_path_documents" "cert_manager_cluster_issuers" {
