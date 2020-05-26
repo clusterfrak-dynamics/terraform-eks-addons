@@ -33,6 +33,12 @@ variable "external_dns" {
   default     = {}
 }
 
+variable "external_dns_secondary" {
+  description = "Customize external-dns chart, see `external_dns_secondary.tf` for supported values"
+  type        = any
+  default     = {}
+}
+
 variable "cert_manager" {
   description = "Customize cert-manager chart, see `cert_manager.tf` for supported values"
   type        = any
