@@ -18,8 +18,8 @@ data "kubectl_path_documents" "istio_operator" {
 }
 
 resource "kubectl_manifest" "istio_operator_crds" {
-  count      = local.istio_operator["enabled"] ? length(data.kubectl_path_documents.istio_operator_crds[0].documents) : 0
-  yaml_body  = element(data.kubectl_path_documents.istio_operator_crds[0].documents, count.index)
+  count     = local.istio_operator["enabled"] ? length(data.kubectl_path_documents.istio_operator_crds[0].documents) : 0
+  yaml_body = element(data.kubectl_path_documents.istio_operator_crds[0].documents, count.index)
 }
 
 resource "kubectl_manifest" "istio_operator" {
