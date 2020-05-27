@@ -75,16 +75,11 @@ resource "aws_iam_role_policy_attachment" "eks-cni-metrics-helper-kiam" {
   policy_arn = aws_iam_policy.eks-cni-metrics-helper[count.index].arn
 }
 
-data "kubectl_path_documents" "cni_metrics_helper" {
-  pattern = "./templates/cni-metrics-helper.yaml"
-  vars = {
+resource "kubectl_manifest" "cni_metrics_helper" {
+  count = local.cni_metrics_helper["enabled"] ? 1 : 0
+  yaml_body = templatefile("${path.module}/templates/cni-metrics-helper.yaml", {
     cni_metrics_helper_role_arn_kiam = local.cni_metrics_helper["create_iam_resources_kiam"] ? aws_iam_role.eks-cni-metrics-helper-kiam[0].arn : ""
     cni_metrics_helper_role_arn_irsa = local.cni_metrics_helper["create_iam_resources_irsa"] ? module.iam_assumable_role_cni_metrics_helper.this_iam_role_arn : ""
     cni_metrics_helper_version       = local.cni_metrics_helper["version"]
-  }
-}
-
-resource "kubectl_manifest" "cni_metrics_helper" {
-  count     = (local.cni_metrics_helper["enabled"] ? 1 : 0) * length(data.kubectl_path_documents.cni_metrics_helper.documents)
-  yaml_body = element(data.kubectl_path_documents.cni_metrics_helper.documents, count.index)
+  })
 }
