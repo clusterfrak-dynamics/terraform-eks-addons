@@ -124,6 +124,12 @@ variable "alb_ingress" {
   default     = {}
 }
 
+variable "aws_node_termination_handler" {
+  description = "Customize aws-node-termination-handler chart, see `aws-node-termination-handler.tf`"
+  type        = any
+  default     = {}
+}
+
 variable "helm_defaults" {
   description = "Customize default Helm behavior"
   type        = any
