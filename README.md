@@ -17,6 +17,7 @@ Provides various addons that are often used on Kubernetes with AWS
   * [nginx-ingress](https://github.com/kubernetes/ingress-nginx): processes *Ingress* object and acts as a HTTP/HTTPS proxy (compatible with cert-manager).
   * [metrics-server](https://github.com/kubernetes-incubator/metrics-server): enable metrics API and horizontal pod scaling (HPA).
   * [prometheus-operator](https://github.com/coreos/prometheus-operator): Monitoring / Alerting / Dashboards.
+  * [karma](https://github.com/prymitive/karma): An alertmanager dashboard
   * [fluentd-cloudwatch](https://github.com/helm/charts/tree/master/incubator/fluentd-cloudwatch): forwards logs to AWS Cloudwatch.
   * [node-problem-detector](https://github.com/kubernetes/node-problem-detector): Forwards node problems to Kubernetes events
   * [flux](https://github.com/weaveworks/flux): Continous Delivery with Gitops workflow.
@@ -26,6 +27,9 @@ Provides various addons that are often used on Kubernetes with AWS
   * [kong](https://konghq.com/kong): API Gateway ingress controller.
   * [keycloak](https://www.keycloak.org/) : Identity and access management
   * [alb-ingress](https://github.com/kubernetes-sigs/aws-alb-ingress-controller): Use AWS ALB for ingress ressources.
+  * [aws-calico](https://github.com/aws/eks-charts/tree/master/stable/aws-calico): Use calico for network policy
+  * [aws-node-termination-handler](https://github.com/aws/aws-node-termination-handler): Manage spot instance lifecyle
+  * [aws-for-fluent-bit](https://github.com/aws/aws-for-fluent-bit): Cloudwatch logging with fluent bit instead of fluentd
 
 ## Requirements
 
