@@ -59,7 +59,7 @@ resource "helm_release" "karma" {
     local.values_karma,
     local.karma["extra_values"]
   ]
-  namespace = local.karma["namespace"]
+  namespace = local.karma["create_ns"] ? kubernetes_namespace.karma.*.metadata.0.name[count.index] : local.karma["namespace"]
 
   depends_on = [
     helm_release.prometheus_operator
