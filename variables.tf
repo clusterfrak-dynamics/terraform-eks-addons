@@ -130,6 +130,18 @@ variable "aws_node_termination_handler" {
   default     = {}
 }
 
+variable "calico" {
+  description = "Customize calico helm chart, see `calico.tf`"
+  type        = any
+  default     = {}
+}
+
+variable "aws_fluent_bit" {
+  description = "Customize aws-for-fluent-bit helm chart, see `aws_fluent_bit.tf`"
+  type        = any
+  default     = {}
+}
+
 variable "helm_defaults" {
   description = "Customize default Helm behavior"
   type        = any
