@@ -7,7 +7,7 @@ locals {
       namespace                 = "flux"
       chart                     = "flux"
       repository                = "https://charts.fluxcd.io"
-      service_account_name      = "flux"
+      service_account_name      = "fluxsa"
       create_iam_resources_kiam = false
       create_iam_resources_irsa = true
       enabled                   = false
