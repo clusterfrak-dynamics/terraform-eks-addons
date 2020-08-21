@@ -42,7 +42,7 @@ VALUES
 
 module "iam_assumable_role_external_dns_secondary" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.6.0"
+  version                       = "~> v2.18.0"
   create_role                   = local.external_dns_secondary["enabled"] && local.external_dns_secondary["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-external-dns-secondary-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

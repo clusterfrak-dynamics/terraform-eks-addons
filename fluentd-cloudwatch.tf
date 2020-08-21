@@ -43,7 +43,7 @@ VALUES
 
 module "iam_assumable_role_fluentd_cloudwatch" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.6.0"
+  version                       = "~> v2.18.0"
   create_role                   = local.fluentd_cloudwatch["enabled"] && local.fluentd_cloudwatch["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-fluentd-cloudwatch-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")
