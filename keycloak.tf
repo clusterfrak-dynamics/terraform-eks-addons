@@ -8,8 +8,8 @@ locals {
       repository             = "https://codecentric.github.io/helm-charts"
       prometheus_plugin      = true
       enabled                = false
-      chart_version          = "7.5.0"
-      version                = "9.0.2"
+      chart_version          = "9.0.6"
+      version                = "11.0.2"
       default_network_policy = true
     },
     var.keycloak
@@ -38,7 +38,7 @@ extraInitContainers: |
       - -c
       - |
         echo "Copying extensions..."
-        wget -O /deployments/keycloak-metrics-spi.jar https://github.com/aerogear/keycloak-metrics-spi/releases/download/1.0.1/keycloak-metrics-spi-1.0.1.jar
+        wget -O /deployments/keycloak-metrics-spi.jar https://github.com/aerogear/keycloak-metrics-spi/releases/download/2.0.1/keycloak-metrics-spi-2.0.1.jar
     volumeMounts:
       - name: deployments
         mountPath: /deployments

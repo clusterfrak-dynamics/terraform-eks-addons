@@ -10,7 +10,7 @@ locals {
       chart_version          = "2.11.1"
       version                = "v0.3.6"
       default_network_policy = true
-      allowed_cidr           = "0.0.0.0/0"
+      allowed_cidrs          = ["0.0.0.0/0"]
     },
     var.metrics_server
   )

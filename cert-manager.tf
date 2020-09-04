@@ -11,8 +11,8 @@ locals {
       create_iam_resources_kiam      = false
       create_iam_resources_irsa      = true
       enabled                        = false
-      chart_version                  = "v0.15.0"
-      version                        = "v0.15.0"
+      chart_version                  = "v1.0.0"
+      version                        = "v1.0.0"
       iam_policy_override            = ""
       default_network_policy         = true
       acme_email                     = "contact@acme.com"
@@ -48,7 +48,7 @@ VALUES
 
 module "iam_assumable_role_cert_manager" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.cert_manager["enabled"] && local.cert_manager["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-cert-manager-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

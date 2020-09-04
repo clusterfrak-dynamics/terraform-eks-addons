@@ -11,8 +11,8 @@ locals {
       create_iam_resources_kiam = false
       create_iam_resources_irsa = true
       enabled                   = false
-      chart_version             = "1.3.0"
-      version                   = "1.19.0"
+      chart_version             = "1.5.0"
+      version                   = "1.20.2"
       default_network_policy    = true
     },
     var.flux
@@ -41,7 +41,7 @@ VALUES
 
 module "iam_assumable_role_flux" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.flux["enabled"] && local.flux["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-flux-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

@@ -11,7 +11,7 @@ locals {
       create_iam_resources_kiam        = false
       create_iam_resources_irsa        = true
       enabled                          = false
-      chart_version                    = "0.2.0"
+      chart_version                    = "0.1.3"
       version                          = "2.3.0"
       iam_policy_override              = ""
       default_network_policy           = true
@@ -43,7 +43,7 @@ VALUES
 
 module "iam_assumable_role_aws_fluent_bit" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.aws_fluent_bit["enabled"] && local.aws_fluent_bit["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-aws-fluent-bit-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

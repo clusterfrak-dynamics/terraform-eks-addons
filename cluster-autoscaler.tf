@@ -4,14 +4,14 @@ locals {
     {
       name                      = "cluster-autoscaler"
       namespace                 = "cluster-autoscaler"
-      chart                     = "cluster-autoscaler"
-      repository                = "https://kubernetes-charts.storage.googleapis.com"
+      chart                     = "cluster-autoscaler-chart"
+      repository                = "https://kubernetes.github.io/autoscaler"
       service_account_name      = "cluster-autoscaler"
       create_iam_resources_kiam = false
       create_iam_resources_irsa = true
       enabled                   = false
-      chart_version             = "7.3.2"
-      version                   = "v1.16.5"
+      chart_version             = "1.0.3"
+      version                   = "v1.17.3"
       iam_policy_override       = ""
       default_network_policy    = true
       cluster_name              = "cluster"
@@ -27,8 +27,9 @@ awsRegion: ${data.aws_region.current.name}
 rbac:
   create: true
   pspEnabled: true
-  serviceAccountAnnotations:
-    eks.amazonaws.com/role-arn: "${local.cluster_autoscaler["enabled"] && local.cluster_autoscaler["create_iam_resources_irsa"] ? module.iam_assumable_role_cluster_autoscaler.this_iam_role_arn : ""}"
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${local.cluster_autoscaler["enabled"] && local.cluster_autoscaler["create_iam_resources_irsa"] ? module.iam_assumable_role_cluster_autoscaler.this_iam_role_arn : ""}"
 image:
   tag: ${local.cluster_autoscaler["version"]}
 podAnnotations:
@@ -42,7 +43,7 @@ VALUES
 
 module "iam_assumable_role_cluster_autoscaler" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.cluster_autoscaler["enabled"] && local.cluster_autoscaler["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-cluster-autoscaler-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

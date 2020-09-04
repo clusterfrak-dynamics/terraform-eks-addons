@@ -7,8 +7,8 @@ locals {
       chart                  = "aws-node-termination-handler"
       repository             = "https://aws.github.io/eks-charts"
       enabled                = false
-      chart_version          = "0.7.5"
-      version                = "v1.4.0"
+      chart_version          = "0.9.5"
+      version                = "v1.7.0"
       default_network_policy = true
     },
     var.aws_node_termination_handler

@@ -6,10 +6,10 @@ locals {
       name                   = "calico"
       namespace              = "kube-system"
       chart                  = "aws-calico"
-      repository             = "https://clusterfrak-dynamics.github.io/eks-charts"
+      repository             = "https://aws.github.io/eks-charts"
       enabled                = false
-      chart_version          = "0.3.0"
-      version                = "v3.13.0"
+      chart_version          = "0.3.1"
+      version                = "v3.13.4"
       default_network_policy = true
       create_ns              = false
 
@@ -102,4 +102,3 @@ resource "kubernetes_network_policy" "calico_allow_namespace" {
     policy_types = ["Ingress"]
   }
 }
-

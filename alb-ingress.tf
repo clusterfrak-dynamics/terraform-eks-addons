@@ -10,8 +10,8 @@ locals {
       create_iam_resources_kiam = false
       create_iam_resources_irsa = true
       enabled                   = false
-      chart_version             = "1.0.0"
-      version                   = "v1.1.6"
+      chart_version             = "1.0.2"
+      version                   = "v1.1.8"
       iam_policy_override       = ""
       default_network_policy    = true
     },
@@ -33,7 +33,7 @@ VALUES
 
 module "iam_assumable_role_alb_ingress" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.alb_ingress["enabled"] && local.alb_ingress["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-alb-ingress-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

@@ -15,7 +15,8 @@ locals {
   )
 
   values_istio_operator = <<VALUES
-tag: ${local.istio_operator["version"]}
+hub: istio
+tag: ${local.istio_operator["version"]}-distroless
 VALUES
 }
 

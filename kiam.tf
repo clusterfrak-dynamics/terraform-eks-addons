@@ -11,8 +11,8 @@ locals {
       create_iam_resources        = true
       enabled                     = false
       assume_role_policy_override = ""
-      chart_version               = "5.0.7"
-      version                     = "v3.5"
+      chart_version               = "5.10.0"
+      version                     = "v3.6"
       iam_policy_override         = ""
       default_network_policy      = true
       iam_user                    = ""

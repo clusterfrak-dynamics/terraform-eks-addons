@@ -8,8 +8,8 @@ locals {
       chart                  = "sealed-secrets"
       repository             = "https://kubernetes-charts.storage.googleapis.com/"
       enabled                = false
-      chart_version          = "1.8.0"
-      version                = "v0.10.0"
+      chart_version          = "1.10.3"
+      version                = "v0.12.4"
       default_network_policy = true
     },
     var.sealed_secrets

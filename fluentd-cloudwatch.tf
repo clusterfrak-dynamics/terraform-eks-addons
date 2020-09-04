@@ -11,8 +11,8 @@ locals {
       create_iam_resources_kiam        = false
       create_iam_resources_irsa        = true
       enabled                          = false
-      chart_version                    = "0.12.1"
-      version                          = "v1.7.4-debian-cloudwatch-1.0"
+      chart_version                    = "0.13.0"
+      version                          = "v1.11-debian-cloudwatch-1"
       iam_policy_override              = ""
       default_network_policy           = true
       containers_log_retention_in_days = 180
@@ -43,7 +43,7 @@ VALUES
 
 module "iam_assumable_role_fluentd_cloudwatch" {
   source                        = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  version                       = "~> v2.18.0"
+  version                       = "~> v2.0"
   create_role                   = local.fluentd_cloudwatch["enabled"] && local.fluentd_cloudwatch["create_iam_resources_irsa"]
   role_name                     = "tf-eks-${var.cluster-name}-fluentd-cloudwatch-irsa"
   provider_url                  = replace(var.eks["cluster_oidc_issuer_url"], "https://", "")

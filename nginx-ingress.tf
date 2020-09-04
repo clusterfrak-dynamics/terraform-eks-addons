@@ -3,17 +3,18 @@ locals {
   nginx_ingress = merge(
     local.helm_defaults,
     {
-      name                   = "nginx-ingress"
+      name                   = "ingress-nginx"
       namespace              = "ingress-nginx"
-      chart                  = "nginx-ingress"
-      repository             = "https://kubernetes-charts.storage.googleapis.com/"
+      chart                  = "ingress-nginx"
+      repository             = "https://kubernetes.github.io/ingress-nginx"
       use_nlb                = false
       use_l7                 = false
       enabled                = false
       default_network_policy = true
       ingress_cidr           = "0.0.0.0/0"
-      chart_version          = "1.35.0"
-      version                = "0.30.0"
+      chart_version          = "2.15.0"
+      version                = "0.35.0"
+      allowed_cidrs          = ["0.0.0.0/0"]
     },
     var.nginx_ingress
   )
@@ -201,9 +202,9 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_ingress" {
   spec {
     pod_selector {
       match_expressions {
-        key      = "app"
+        key      = "app.kubernetes.io/name"
         operator = "In"
-        values   = ["nginx-ingress"]
+        values   = ["ingress-nginx"]
       }
     }
 
@@ -250,6 +251,43 @@ resource "kubernetes_network_policy" "nginx_ingress_allow_monitoring" {
         namespace_selector {
           match_labels = {
             name = kubernetes_namespace.prometheus_operator.*.metadata.0.name[count.index]
+          }
+        }
+      }
+    }
+
+    policy_types = ["Ingress"]
+  }
+}
+
+resource "kubernetes_network_policy" "nginx_ingress_allow_control_plane" {
+  count = local.nginx_ingress["enabled"] && local.nginx_ingress["default_network_policy"] ? 1 : 0
+
+  metadata {
+    name      = "${kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]}-allow-control-plane"
+    namespace = kubernetes_namespace.nginx_ingress.*.metadata.0.name[count.index]
+  }
+
+  spec {
+    pod_selector {
+      match_expressions {
+        key      = "app.kubernetes.io/name"
+        operator = "In"
+        values   = ["ingress-nginx"]
+      }
+    }
+
+    ingress {
+      ports {
+        port     = "8443"
+        protocol = "TCP"
+      }
+
+      dynamic "from" {
+        for_each = local.nginx_ingress["allowed_cidrs"]
+        content {
+          ip_block {
+            cidr = from.value
           }
         }
       }

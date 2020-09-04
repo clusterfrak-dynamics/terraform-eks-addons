@@ -8,8 +8,8 @@ locals {
       repository             = "https://kubernetes-charts.storage.googleapis.com/"
       create_ns              = false
       enabled                = false
-      chart_version          = "1.5.1"
-      version                = "v0.60"
+      chart_version          = "1.5.2"
+      version                = "v0.68"
       default_network_policy = true
     },
     var.karma
