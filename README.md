@@ -1,3 +1,7 @@
+# ARCHIVED
+
+This repository has moved to [particule](https://github.com/particuleio/terraform-kubernetes-addons) to a more general repository supporting multiple cloud providers. It is also available on [TF registry](https://registry.terraform.io/modules/particuleio/addons/kubernetes/latest)
+
 # terraform-kubernetes-addons
 
 [![Build Status](https://github.com/clusterfrak-dynamics/terraform-kubernetes-addons/workflows/Terraform/badge.svg)](https://github.com/clusterfrak-dynamics/terraform-kubernetes-addons/actions?query=workflow%3ATerraform)
